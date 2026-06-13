@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-read-diagram"
+description = "Enables the read_diagram command without any pre-configured scope."
+commands.allow = ["read_diagram"]
+
+[[permission]]
+identifier = "deny-read-diagram"
+description = "Denies the read_diagram command without any pre-configured scope."
+commands.deny = ["read_diagram"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-diagram-png"
+description = "Enables the save_diagram_png command without any pre-configured scope."
+commands.allow = ["save_diagram_png"]
+
+[[permission]]
+identifier = "deny-save-diagram-png"
+description = "Denies the save_diagram_png command without any pre-configured scope."
+commands.deny = ["save_diagram_png"]

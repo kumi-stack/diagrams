@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-inspect-diagram-png"
+description = "Enables the inspect_diagram_png command without any pre-configured scope."
+commands.allow = ["inspect_diagram_png"]
+
+[[permission]]
+identifier = "deny-inspect-diagram-png"
+description = "Denies the inspect_diagram_png command without any pre-configured scope."
+commands.deny = ["inspect_diagram_png"]

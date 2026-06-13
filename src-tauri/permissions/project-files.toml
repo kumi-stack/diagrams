@@ -1,0 +1,16 @@
+[[set]]
+identifier = "project-files"
+description = "Allows the main window to manage Mermaid projects inside the application-owned project root."
+permissions = [
+  "allow-list-projects",
+  "allow-create-project",
+  "allow-list-project-tree",
+  "allow-read-diagram",
+  "allow-write-diagram",
+  "allow-create-entry",
+  "allow-rename-entry",
+  "allow-delete-entry",
+  "allow-inspect-diagram-png",
+  "allow-save-diagram-png",
+  "allow-copy-diagram-png",
+]

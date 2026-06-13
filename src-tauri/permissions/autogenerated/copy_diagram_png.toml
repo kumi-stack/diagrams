@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-copy-diagram-png"
+description = "Enables the copy_diagram_png command without any pre-configured scope."
+commands.allow = ["copy_diagram_png"]
+
+[[permission]]
+identifier = "deny-copy-diagram-png"
+description = "Denies the copy_diagram_png command without any pre-configured scope."
+commands.deny = ["copy_diagram_png"]
