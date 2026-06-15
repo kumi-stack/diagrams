@@ -10,7 +10,12 @@ permissions = [
   "allow-create-entry",
   "allow-rename-entry",
   "allow-delete-entry",
+  "allow-get-settings",
+  "allow-save-settings",
+  "allow-list-ollama-models",
+  "allow-generate-diagram",
   "allow-inspect-diagram-png",
   "allow-save-diagram-png",
   "allow-copy-diagram-png",
+  "allow-set-current-project",
 ]

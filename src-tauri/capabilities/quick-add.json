@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "quick-add",
+  "description": "Capability for the quick diagram window",
+  "windows": ["quick-add"],
+  "permissions": [
+    "core:default",
+    "quick-add"
+  ]
+}

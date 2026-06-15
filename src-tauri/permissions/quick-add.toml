@@ -1,0 +1,13 @@
+[[set]]
+identifier = "quick-add"
+description = "Allows the quick-add window to create a Mermaid diagram and return it to the main window."
+permissions = [
+  "allow-list-projects",
+  "allow-create-entry",
+  "allow-write-diagram",
+  "allow-get-settings",
+  "allow-generate-diagram",
+  "allow-get-current-project",
+  "allow-finish-quick-add",
+  "allow-cancel-quick-add",
+]

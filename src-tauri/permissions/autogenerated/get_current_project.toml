@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-current-project"
+description = "Enables the get_current_project command without any pre-configured scope."
+commands.allow = ["get_current_project"]
+
+[[permission]]
+identifier = "deny-get-current-project"
+description = "Denies the get_current_project command without any pre-configured scope."
+commands.deny = ["get_current_project"]

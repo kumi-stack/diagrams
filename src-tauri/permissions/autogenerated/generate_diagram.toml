@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-generate-diagram"
+description = "Enables the generate_diagram command without any pre-configured scope."
+commands.allow = ["generate_diagram"]
+
+[[permission]]
+identifier = "deny-generate-diagram"
+description = "Denies the generate_diagram command without any pre-configured scope."
+commands.deny = ["generate_diagram"]

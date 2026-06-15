@@ -4,6 +4,7 @@
   import FolderPlusIcon from "@lucide/svelte/icons/folder-plus";
   import NetworkIcon from "@lucide/svelte/icons/network";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
+  import SettingsIcon from "@lucide/svelte/icons/settings";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
@@ -55,15 +56,25 @@
         </div>
       </div>
       <Card.Action>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Refresh projects"
-          disabled={loading}
-          onclick={onrefresh}
-        >
-          <RefreshCwIcon class={loading ? "animate-spin" : ""} />
-        </Button>
+        <div class="flex items-center">
+          <Button
+            href={resolve("/settings")}
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Settings"
+          >
+            <SettingsIcon />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Refresh projects"
+            disabled={loading}
+            onclick={onrefresh}
+          >
+            <RefreshCwIcon class={loading ? "animate-spin" : ""} />
+          </Button>
+        </div>
       </Card.Action>
     </Card.Header>
 

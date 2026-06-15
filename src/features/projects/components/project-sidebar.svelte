@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import FilePlusIcon from "@lucide/svelte/icons/file-plus-2";
   import FolderPlusIcon from "@lucide/svelte/icons/folder-plus";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import FolderIcon from "@lucide/svelte/icons/folder";
   import PlusIcon from "@lucide/svelte/icons/plus";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
+  import SettingsIcon from "@lucide/svelte/icons/settings";
   import ProjectTreeNode from "./project-tree-node.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
@@ -144,4 +146,14 @@
       </div>
     {/if}
   </Sidebar.Content>
+  <Sidebar.Footer class="border-t p-3">
+    <Button
+      href={resolve("/settings")}
+      variant="ghost"
+      class="w-full justify-start"
+    >
+      <SettingsIcon />
+      Settings
+    </Button>
+  </Sidebar.Footer>
 </Sidebar.Root>

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-cancel-quick-add"
+description = "Enables the cancel_quick_add command without any pre-configured scope."
+commands.allow = ["cancel_quick_add"]
+
+[[permission]]
+identifier = "deny-cancel-quick-add"
+description = "Denies the cancel_quick_add command without any pre-configured scope."
+commands.deny = ["cancel_quick_add"]

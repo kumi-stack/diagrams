@@ -2,6 +2,9 @@
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import { Spinner } from "$lib/components/ui/spinner";
+  import { Textarea } from "$lib/components/ui/textarea";
   import type { EntryKind } from "@/api/projects";
   import { defaultDiagramExtension } from "@/features/diagrams/diagram-types";
 
@@ -12,6 +15,7 @@
     initialName = "",
     busy = false,
     error = "",
+    aiEnabled = false,
     onsubmit,
   }: {
     open: boolean;
@@ -20,19 +24,24 @@
     initialName?: string;
     busy?: boolean;
     error?: string;
-    onsubmit: (name: string) => void;
+    aiEnabled?: boolean;
+    onsubmit: (name: string, description: string) => void;
   } = $props();
 
   let name = $state("");
+  let description = $state("");
 
   $effect(() => {
-    if (open) name = initialName;
+    if (open) {
+      name = initialName;
+      description = "";
+    }
   });
 
   function submit(event: SubmitEvent) {
     event.preventDefault();
     const nextName = name.trim();
-    if (nextName) onsubmit(nextName);
+    if (nextName) onsubmit(nextName, description.trim());
   }
 </script>
 
@@ -59,6 +68,21 @@
         disabled={busy}
         autofocus
       />
+      {#if mode === "create" && kind === "file" && aiEnabled}
+        <div class="grid gap-2">
+          <Label for="diagram-description">Describe the diagram (optional)</Label>
+          <Textarea
+            id="diagram-description"
+            bind:value={description}
+            placeholder="For example: A web application with an API gateway, two services, PostgreSQL and a message queue."
+            rows={5}
+            disabled={busy}
+          />
+          <p class="text-muted-foreground text-xs">
+            The selected local Ollama model will generate the initial Mermaid source.
+          </p>
+        </div>
+      {/if}
       {#if error}
         <p class="text-destructive text-xs" role="alert">{error}</p>
       {/if}
@@ -67,6 +91,9 @@
           Cancel
         </Button>
         <Button type="submit" disabled={busy || !name.trim()}>
+          {#if busy}
+            <Spinner />
+          {/if}
           {mode === "create" ? "Create" : "Rename"}
         </Button>
       </Dialog.Footer>

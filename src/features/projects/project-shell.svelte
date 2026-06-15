@@ -7,6 +7,8 @@
   import ProjectSidebar from "./components/project-sidebar.svelte";
   import { ProjectFilesController } from "./project-files-controller.svelte";
   import { setProjectFilesContext } from "./project-files-context";
+  import { shellApi } from "@/api/shell";
+  import { registerQuickAddNavigation } from "./quick-add-navigation";
 
   let {
     projectName,
@@ -23,7 +25,11 @@
   const project = new ProjectFilesController(projectName);
   setProjectFilesContext(project);
 
-  onMount(project.initialize);
+  onMount(() => {
+    void project.initialize();
+    void shellApi.setCurrentProject(projectName);
+    return registerQuickAddNavigation(project.prepareQuickAddNavigation);
+  });
 
   $effect(() => {
     project.setActivePath(activePath);
@@ -61,6 +67,7 @@
     : ""}
   busy={project.dialog.busy}
   error={project.dialog.error}
+  aiEnabled={project.aiEnabled}
   onsubmit={project.submitEntry}
 />
 

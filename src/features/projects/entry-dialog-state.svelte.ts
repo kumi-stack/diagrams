@@ -10,6 +10,7 @@ export class EntryDialogState {
   target = $state<TreeNode | null>(null);
   busy = $state(false);
   error = $state("");
+  description = $state("");
 
   openCreate(parentPath: string, kind: EntryKind) {
     this.mode = "create";
@@ -17,6 +18,7 @@ export class EntryDialogState {
     this.parentPath = parentPath;
     this.target = null;
     this.error = "";
+    this.description = "";
     this.open = true;
   }
 

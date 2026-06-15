@@ -11,6 +11,10 @@ import {
   defaultDiagramExtension,
   diagramHref,
 } from "@/features/diagrams/diagram-types";
+import { settingsApi } from "@/api/settings";
+import { toast } from "svelte-sonner";
+import type { QuickAddResult } from "@/api/shell";
+import { createDiagram } from "./diagram-creation";
 import { EntryDialogState } from "./entry-dialog-state.svelte";
 
 export class ProjectFilesController {
@@ -23,6 +27,7 @@ export class ProjectFilesController {
   projectDialogOpen = $state(false);
   creatingProject = $state(false);
   projectDialogError = $state("");
+  aiEnabled = $state(false);
 
   readonly dialog = new EntryDialogState();
   private flushActiveDiagram: () => Promise<boolean> = async () => true;
@@ -30,7 +35,22 @@ export class ProjectFilesController {
   constructor(readonly projectName: string) {}
 
   initialize = async () => {
-    await Promise.all([this.refreshTree(), this.refreshProjects()]);
+    await Promise.all([
+      this.refreshTree(),
+      this.refreshProjects(),
+      this.refreshSettings(),
+    ]);
+  };
+
+  refreshSettings = async () => {
+    try {
+      const settings = await settingsApi.get();
+      this.aiEnabled = Boolean(
+        settings.ollama.enabled && settings.ollama.model,
+      );
+    } catch {
+      this.aiEnabled = false;
+    }
   };
 
   setActivePath = (path: string | null) => {
@@ -44,6 +64,12 @@ export class ProjectFilesController {
         this.flushActiveDiagram = async () => true;
       }
     };
+  };
+
+  prepareQuickAddNavigation = async (result: QuickAddResult) => {
+    if (!(await this.flushActiveDiagram())) return false;
+    if (result.project === this.projectName) await this.refreshTree();
+    return true;
   };
 
   refreshTree = async () => {
@@ -110,7 +136,7 @@ export class ProjectFilesController {
     this.dialog.openRename(node);
   };
 
-  submitEntry = async (rawName: string) => {
+  submitEntry = async (rawName: string, description = "") => {
     this.dialog.busy = true;
     this.dialog.error = "";
     const name =
@@ -121,17 +147,34 @@ export class ProjectFilesController {
 
     try {
       if (this.dialog.mode === "create") {
-        const created = await projectsApi.createEntry(
-          this.projectName,
-          this.dialog.parentPath,
-          name,
-          this.dialog.kind,
-        );
+        const { diagram: created, warning: generationWarning } =
+          this.dialog.kind === "file"
+            ? await createDiagram(
+                this.projectName,
+                name,
+                description,
+                this.dialog.parentPath,
+              )
+            : {
+                diagram: await projectsApi.createEntry(
+                  this.projectName,
+                  this.dialog.parentPath,
+                  name,
+                  this.dialog.kind,
+                ),
+                warning: "",
+              };
+
         this.dialog.open = false;
         await this.refreshTree();
 
         if (created.kind === "file") {
           await this.openDiagram(created);
+          if (generationWarning) {
+            toast.warning("Diagram created without AI content", {
+              description: generationWarning,
+            });
+          }
         }
       } else if (this.dialog.target) {
         const oldPath = this.dialog.target.path;
