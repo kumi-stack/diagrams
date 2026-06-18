@@ -67,6 +67,7 @@
     : ""}
   busy={project.dialog.busy}
   error={project.dialog.error}
+  status={project.dialog.status}
   aiEnabled={project.aiEnabled}
   onsubmit={project.submitEntry}
 />

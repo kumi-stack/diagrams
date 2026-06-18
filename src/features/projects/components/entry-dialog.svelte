@@ -15,6 +15,7 @@
     initialName = "",
     busy = false,
     error = "",
+    status = "",
     aiEnabled = false,
     onsubmit,
   }: {
@@ -24,6 +25,7 @@
     initialName?: string;
     busy?: boolean;
     error?: string;
+    status?: string;
     aiEnabled?: boolean;
     onsubmit: (name: string, description: string) => void;
   } = $props();
@@ -86,6 +88,12 @@
       {#if error}
         <p class="text-destructive text-xs" role="alert">{error}</p>
       {/if}
+      {#if busy && status}
+        <p class="text-muted-foreground flex items-center gap-2 text-xs" role="status">
+          <Spinner class="size-3" />
+          {status}
+        </p>
+      {/if}
       <Dialog.Footer>
         <Button variant="outline" onclick={() => (open = false)} disabled={busy}>
           Cancel
@@ -94,7 +102,7 @@
           {#if busy}
             <Spinner />
           {/if}
-          {mode === "create" ? "Create" : "Rename"}
+          {busy && status ? status.replace("...", "") : mode === "create" ? "Create" : "Rename"}
         </Button>
       </Dialog.Footer>
     </form>

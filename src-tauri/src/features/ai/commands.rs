@@ -4,7 +4,7 @@ use super::{
     prompts::{build_prompt, clean_mermaid_response},
 };
 use crate::features::settings::{commands::service as settings_service, model::AppSettings};
-use ollama_rs::{generation::completion::request::GenerationRequest, Ollama};
+use ollama_rs::{generation::completion::request::GenerationRequest, models::ModelOptions, Ollama};
 use std::future::Future;
 use tauri::AppHandle;
 
@@ -29,8 +29,13 @@ pub async fn generate_diagram(app: AppHandle, description: String) -> Result<Str
         .map_err(|error| AiError::new(error.code, error.message))?;
 
     generate_with(settings, &description, |model, prompt| async move {
+        let options = ModelOptions::default().temperature(0.2).num_predict(700);
         let response = Ollama::default()
-            .generate(GenerationRequest::new(model, prompt))
+            .generate(
+                GenerationRequest::new(model, prompt)
+                    .options(options)
+                    .think(false),
+            )
             .await
             .map_err(AiError::ollama)?;
         Ok(response.response)

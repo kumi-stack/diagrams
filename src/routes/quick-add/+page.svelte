@@ -24,6 +24,7 @@
   let aiEnabled = $state(false);
   let loading = $state(true);
   let creating = $state(false);
+  let creationStatus = $state("");
   let error = $state("");
 
   onMount(() => {
@@ -65,9 +66,19 @@
     if (!project || !name.trim()) return;
 
     creating = true;
+    creationStatus = "";
     error = "";
     try {
-      const result = await createDiagram(project, name, description);
+      const result = await createDiagram(project, name, description, "", {
+        onStatus: (status) => {
+          creationStatus =
+            status === "creating"
+              ? "Creating diagram file..."
+              : status === "generating"
+                ? "Generating Mermaid source with Ollama..."
+                : "Saving generated source...";
+        },
+      });
       await shellApi.finishQuickAdd({
         project,
         path: result.diagram.path,
@@ -77,6 +88,7 @@
       error = errorMessage(cause);
     } finally {
       creating = false;
+      creationStatus = "";
     }
   }
 </script>
@@ -153,6 +165,12 @@
         {#if error}
           <p class="text-destructive text-xs" role="alert">{error}</p>
         {/if}
+        {#if creating && creationStatus}
+          <p class="text-muted-foreground flex items-center gap-2 text-xs" role="status">
+            <Spinner class="size-3" />
+            {creationStatus}
+          </p>
+        {/if}
       </Card.Content>
 
       <Card.Footer class="justify-end gap-2 border-t">
@@ -173,7 +191,7 @@
           {:else}
             <FilePlusIcon />
           {/if}
-          Create
+          {creating && creationStatus ? creationStatus.replace("...", "") : "Create"}
         </Button>
       </Card.Footer>
     </form>

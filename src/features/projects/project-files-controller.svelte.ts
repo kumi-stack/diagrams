@@ -154,6 +154,16 @@ export class ProjectFilesController {
                 name,
                 description,
                 this.dialog.parentPath,
+                {
+                  onStatus: (status) => {
+                    this.dialog.status =
+                      status === "creating"
+                        ? "Creating diagram file..."
+                        : status === "generating"
+                          ? "Generating Mermaid source with Ollama..."
+                          : "Saving generated source...";
+                  },
+                },
               )
             : {
                 diagram: await projectsApi.createEntry(
@@ -211,6 +221,7 @@ export class ProjectFilesController {
       this.dialog.error = errorMessage(cause);
     } finally {
       this.dialog.busy = false;
+      this.dialog.status = "";
     }
   };
 

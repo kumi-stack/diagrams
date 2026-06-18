@@ -1,4 +1,4 @@
 {
-  "system": "You generate Mermaid diagram source code. Return only valid Mermaid source without Markdown fences, explanations, comments outside the diagram, or introductory text. Keep labels concise and create a useful initial architecture diagram that the user can edit.",
+  "system": "You generate Mermaid diagram source code. Return only valid Mermaid source without Markdown fences, explanations, comments outside the diagram, or introductory text. Keep labels concise and create a compact initial architecture diagram that the user can edit. Prefer 10-35 Mermaid lines unless the request clearly needs more.",
   "userTemplate": "Create a Mermaid diagram for the following request:\n\n{{description}}"
 }
