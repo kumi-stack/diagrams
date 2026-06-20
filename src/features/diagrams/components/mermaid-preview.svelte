@@ -1,19 +1,28 @@
 <script lang="ts">
   import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
+  import PanelLeftCloseIcon from "@lucide/svelte/icons/panel-left-close";
+  import PanelLeftOpenIcon from "@lucide/svelte/icons/panel-left-open";
   import mermaid from "mermaid";
   import { onMount } from "svelte";
   import * as Alert from "$lib/components/ui/alert";
   import { Badge } from "$lib/components/ui/badge";
+  import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import { Spinner } from "$lib/components/ui/spinner";
+  import * as Tooltip from "$lib/components/ui/tooltip";
+  import SvgViewport from "$lib/components/svg-viewport.svelte";
 
   let {
     source,
+    editorHidden,
+    onToggleEditor,
     isRendering = $bindable(true),
     renderError = $bindable(""),
     renderedSvg = $bindable(""),
   }: {
     source: string;
+    editorHidden: boolean;
+    onToggleEditor: () => void;
     isRendering?: boolean;
     renderError?: string;
     renderedSvg?: string;
@@ -99,13 +108,38 @@
       <Card.Title class="text-sm">Diagram preview</Card.Title>
     </div>
 
-    <Card.Action>
+    <Card.Action class="flex items-center gap-2">
       <Badge variant="secondary">Auto-render</Badge>
+      <Tooltip.Provider>
+        <Tooltip.Root>
+          <Tooltip.Trigger>
+            {#snippet child({ props })}
+              <Button
+                {...props}
+                variant="outline"
+                size="icon-sm"
+                onclick={onToggleEditor}
+                aria-label={editorHidden ? "Show editor" : "Hide editor"}
+                aria-pressed={editorHidden}
+              >
+                {#if editorHidden}
+                  <PanelLeftOpenIcon aria-hidden="true" />
+                {:else}
+                  <PanelLeftCloseIcon aria-hidden="true" />
+                {/if}
+              </Button>
+            {/snippet}
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            {editorHidden ? "Show editor" : "Hide editor"}
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
     </Card.Action>
   </Card.Header>
 
   <Card.Content
-    class="relative grid min-h-0 flex-1 place-items-center overflow-auto bg-muted/20 p-6 sm:p-10"
+    class="relative grid min-h-0 flex-1 place-items-center overflow-hidden bg-muted/20 p-0"
   >
     <div
       class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:18px_18px]"
@@ -122,8 +156,8 @@
         </Alert.Description>
       </Alert.Root>
     {:else if diagramSvg}
-      <div class:opacity-50={isRendering} class="diagram z-10 grid w-full min-w-72 place-items-center transition-opacity">
-        {@html diagramSvg}
+      <div class:opacity-50={isRendering} class="z-10 h-full w-full transition-opacity">
+        <SvgViewport svg={diagramSvg} ariaLabel="Diagram preview" />
       </div>
     {:else}
       <div class="text-muted-foreground z-10 flex items-center gap-2 text-xs">
@@ -139,18 +173,3 @@
     Updates as you type
   </Card.Footer>
 </Card.Root>
-
-<style>
-  .diagram :global(svg) {
-    width: 100%;
-    max-width: 54rem;
-    max-height: calc(100vh - 16rem);
-    filter: drop-shadow(0 0.75rem 1.25rem rgb(15 23 42 / 0.06));
-  }
-
-  @media (max-width: 48rem) {
-    .diagram :global(svg) {
-      max-height: none;
-    }
-  }
-</style>
