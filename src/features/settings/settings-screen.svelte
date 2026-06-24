@@ -1,9 +1,11 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
+  import { onNavigate } from "$app/navigation";
   import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
   import BotIcon from "@lucide/svelte/icons/bot";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
   import SaveIcon from "@lucide/svelte/icons/save";
+  import SlidersHorizontalIcon from "@lucide/svelte/icons/sliders-horizontal";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button";
@@ -14,6 +16,12 @@
   import { Switch } from "$lib/components/ui/switch";
   import { aiApi, settingsApi, type OllamaModel } from "@/api/settings";
   import { errorMessage } from "@/api/projects";
+  import DiagramConfigForm from "@/features/diagrams/components/diagram-config-form.svelte";
+  import { ConfigAutosave } from "@/features/diagrams/config-autosave.svelte";
+  import {
+    resolveDiagramConfig,
+    type DiagramConfigOverrides,
+  } from "@/features/diagrams/diagram-config";
 
   let enabled = $state(false);
   let selectedModel = $state("");
@@ -23,16 +31,29 @@
   let saving = $state(false);
   let error = $state("");
   let connectionError = $state("");
+  let diagramDefaults = $state<DiagramConfigOverrides>({});
+  let diagramConfigLoaded = $state(false);
+  let resolvedDiagramConfig = $derived(resolveDiagramConfig(diagramDefaults));
+  const diagramAutosave = new ConfigAutosave<DiagramConfigOverrides>((value) =>
+    settingsApi.saveDiagramDefaults(value),
+  );
 
   onMount(loadSettings);
+  onNavigate(async () => {
+    await diagramAutosave.flush();
+  });
 
   async function loadSettings() {
     loading = true;
+    diagramConfigLoaded = false;
     error = "";
     try {
       const settings = await settingsApi.get();
       enabled = settings.ollama.enabled;
       selectedModel = settings.ollama.model ?? "";
+      diagramDefaults = settings.diagramDefaults;
+      diagramAutosave.markSaved(diagramDefaults);
+      diagramConfigLoaded = true;
       if (enabled) await refreshModels();
     } catch (cause) {
       error = errorMessage(cause);
@@ -64,11 +85,13 @@
     saving = true;
     error = "";
     try {
+      await diagramAutosave.flush();
       await settingsApi.save({
         ollama: {
           enabled,
           model: selectedModel || null,
         },
+        diagramDefaults,
       });
       toast.success("Settings saved");
     } catch (cause) {
@@ -82,6 +105,10 @@
     enabled = nextEnabled;
     if (nextEnabled && models.length === 0) await refreshModels();
   }
+
+  $effect(() => {
+    if (diagramConfigLoaded) diagramAutosave.schedule(diagramDefaults);
+  });
 </script>
 
 <main class="bg-muted/30 min-h-screen p-4 sm:p-8">
@@ -187,6 +214,45 @@
           Save settings
         </Button>
       </Card.Footer>
+    </Card.Root>
+
+    <Card.Root>
+      <Card.Header>
+        <div class="flex items-center gap-3">
+          <div class="bg-primary/10 text-primary grid size-10 place-items-center rounded-2xl">
+            <SlidersHorizontalIcon class="size-5" />
+          </div>
+          <div>
+            <Card.Title>Diagram defaults</Card.Title>
+            <Card.Description>
+              Global defaults inherited by every project and diagram.
+            </Card.Description>
+          </div>
+        </div>
+      </Card.Header>
+      <Card.Content>
+        {#if loading}
+          <div class="text-muted-foreground flex items-center gap-2 text-sm">
+            <Spinner /> Loading configuration
+          </div>
+        {:else if !diagramConfigLoaded}
+          <div class="border-destructive/30 bg-destructive/5 grid gap-3 rounded-2xl border p-4">
+            <p class="text-destructive text-xs">
+              Diagram defaults could not be loaded. No changes will be saved.
+            </p>
+            <Button variant="outline" size="sm" onclick={loadSettings}>Retry</Button>
+          </div>
+        {:else}
+          <DiagramConfigForm
+            bind:value={diagramDefaults}
+            resolved={resolvedDiagramConfig}
+            saveStatus={diagramAutosave.status}
+            saveError={diagramAutosave.error}
+            onretry={diagramAutosave.retry}
+            showPreview
+          />
+        {/if}
+      </Card.Content>
     </Card.Root>
   </div>
 </main>

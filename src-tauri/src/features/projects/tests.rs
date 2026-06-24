@@ -2,6 +2,9 @@ use super::{
     model::{CreateEntryRequest, EntryKind, RenameEntryRequest},
     service::ProjectService,
 };
+use crate::features::settings::model::{
+    CommonDiagramConfigOverrides, DiagramConfigOverrides, DiagramTheme,
+};
 use std::fs;
 use tempfile::TempDir;
 
@@ -188,4 +191,112 @@ fn rejects_symlink_entries() {
             .code,
         "invalidPath"
     );
+}
+
+#[test]
+fn saves_project_and_diagram_configuration() {
+    let (temp, service) = service();
+    service.create_project("project").unwrap();
+    let defaults = DiagramConfigOverrides {
+        common: Some(CommonDiagramConfigOverrides {
+            theme: Some(DiagramTheme::Dark),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    service
+        .save_project_diagram_defaults("project", defaults.clone())
+        .unwrap();
+    service
+        .save_diagram_overrides("project", "diagram.mmd", defaults.clone())
+        .unwrap();
+
+    let config = service.get_diagram_config("project").unwrap();
+    assert_eq!(config.defaults, defaults);
+    assert_eq!(config.diagrams.get("diagram.mmd"), Some(&defaults));
+    assert!(temp
+        .path()
+        .join("projects/project/.arch-diagrams.json")
+        .exists());
+    assert_eq!(service.list_project_tree("project").unwrap().len(), 1);
+}
+
+#[test]
+fn remaps_and_removes_diagram_configuration_with_entries() {
+    let (_temp, service) = service();
+    service.create_project("project").unwrap();
+    service
+        .create_entry(
+            "project",
+            CreateEntryRequest {
+                parent_path: String::new(),
+                name: "folder".into(),
+                kind: EntryKind::Folder,
+            },
+        )
+        .unwrap();
+    service
+        .create_entry(
+            "project",
+            CreateEntryRequest {
+                parent_path: "folder".into(),
+                name: "nested.mmd".into(),
+                kind: EntryKind::File,
+            },
+        )
+        .unwrap();
+    service
+        .save_diagram_overrides(
+            "project",
+            "folder/nested.mmd",
+            DiagramConfigOverrides {
+                common: Some(CommonDiagramConfigOverrides {
+                    theme: Some(DiagramTheme::Forest),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    service
+        .rename_entry(
+            "project",
+            RenameEntryRequest {
+                path: "folder".into(),
+                new_name: "renamed".into(),
+                kind: EntryKind::Folder,
+            },
+        )
+        .unwrap();
+    assert!(service
+        .get_diagram_config("project")
+        .unwrap()
+        .diagrams
+        .contains_key("renamed/nested.mmd"));
+
+    service
+        .delete_entry("project", "renamed", EntryKind::Folder)
+        .unwrap();
+    assert!(service
+        .get_diagram_config("project")
+        .unwrap()
+        .diagrams
+        .is_empty());
+}
+
+#[test]
+fn refuses_to_overwrite_invalid_project_configuration() {
+    let (temp, service) = service();
+    service.create_project("project").unwrap();
+    let path = temp.path().join("projects/project/.arch-diagrams.json");
+    fs::write(&path, "{ invalid").unwrap();
+
+    assert_eq!(
+        service
+            .save_project_diagram_defaults("project", Default::default())
+            .unwrap_err()
+            .code,
+        "invalidConfig"
+    );
+    assert_eq!(fs::read_to_string(path).unwrap(), "{ invalid");
 }

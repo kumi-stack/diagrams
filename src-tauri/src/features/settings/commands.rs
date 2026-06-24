@@ -1,4 +1,8 @@
-use super::{error::SettingsError, model::AppSettings, service::SettingsService};
+use super::{
+    error::SettingsError,
+    model::{AppSettings, DiagramConfigOverrides},
+    service::SettingsService,
+};
 use tauri::{AppHandle, Manager};
 
 pub(crate) fn service(app: &AppHandle) -> Result<SettingsService, SettingsError> {
@@ -18,4 +22,12 @@ pub fn get_settings(app: AppHandle) -> Result<AppSettings, SettingsError> {
 pub fn save_settings(app: AppHandle, settings: AppSettings) -> Result<AppSettings, SettingsError> {
     service(&app)?.save(&settings)?;
     Ok(settings)
+}
+
+#[tauri::command]
+pub fn save_global_diagram_defaults(
+    app: AppHandle,
+    defaults: DiagramConfigOverrides,
+) -> Result<AppSettings, SettingsError> {
+    service(&app)?.save_diagram_defaults(defaults)
 }

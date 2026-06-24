@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-project-diagram-defaults"
+description = "Enables the save_project_diagram_defaults command without any pre-configured scope."
+commands.allow = ["save_project_diagram_defaults"]
+
+[[permission]]
+identifier = "deny-save-project-diagram-defaults"
+description = "Denies the save_project_diagram_defaults command without any pre-configured scope."
+commands.deny = ["save_project_diagram_defaults"]

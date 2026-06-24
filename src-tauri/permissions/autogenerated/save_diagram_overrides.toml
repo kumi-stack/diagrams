@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-diagram-overrides"
+description = "Enables the save_diagram_overrides command without any pre-configured scope."
+commands.allow = ["save_diagram_overrides"]
+
+[[permission]]
+identifier = "deny-save-diagram-overrides"
+description = "Denies the save_diagram_overrides command without any pre-configured scope."
+commands.deny = ["save_diagram_overrides"]

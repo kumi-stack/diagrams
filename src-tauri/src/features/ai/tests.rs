@@ -11,6 +11,7 @@ fn enabled_settings() -> AppSettings {
             enabled: true,
             model: Some("test-model:latest".into()),
         },
+        ..Default::default()
     }
 }
 
@@ -77,6 +78,7 @@ fn rejects_missing_model_without_calling_client() {
             enabled: true,
             model: None,
         },
+        ..Default::default()
     };
     let error = tauri::async_runtime::block_on(generate_with(settings, "diagram", |_, _| async {
         panic!("client should not be called")

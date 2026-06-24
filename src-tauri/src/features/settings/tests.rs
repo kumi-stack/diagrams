@@ -20,6 +20,7 @@ fn saves_and_loads_selected_model() {
             enabled: true,
             model: Some("qwen2.5-coder:7b".into()),
         },
+        diagram_defaults: Default::default(),
     };
 
     service.save(&settings).unwrap();
@@ -40,4 +41,20 @@ fn reports_invalid_json() {
     let error = service.get().unwrap_err();
     assert_eq!(error.code, "invalidConfig");
     assert!(error.message.contains("config.json"));
+}
+
+#[test]
+fn loads_legacy_settings_without_diagram_defaults() {
+    let temp = TempDir::new().unwrap();
+    let root = temp.path().join("app");
+    fs::create_dir_all(&root).unwrap();
+    fs::write(
+        root.join("config.json"),
+        r#"{"ollama":{"enabled":true,"model":"legacy"}}"#,
+    )
+    .unwrap();
+
+    let settings = SettingsService::new(root).unwrap().get().unwrap();
+    assert!(settings.diagram_defaults.is_empty());
+    assert_eq!(settings.ollama.model.as_deref(), Some("legacy"));
 }

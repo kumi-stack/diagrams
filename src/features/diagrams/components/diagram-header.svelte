@@ -2,6 +2,7 @@
   import NetworkIcon from "@lucide/svelte/icons/network";
   import ClipboardIcon from "@lucide/svelte/icons/clipboard";
   import DownloadIcon from "@lucide/svelte/icons/download";
+  import Settings2Icon from "@lucide/svelte/icons/settings-2";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import * as Sidebar from "$lib/components/ui/sidebar";
@@ -20,6 +21,7 @@
     copying = false,
     onExport,
     onCopy,
+    onConfigure,
   }: {
     projectName: string;
     diagramPath: string;
@@ -32,6 +34,7 @@
     copying?: boolean;
     onExport?: () => void;
     onCopy?: () => void;
+    onConfigure?: () => void;
   } = $props();
 
   let statusLabel = $derived(
@@ -56,6 +59,14 @@
   </div>
 
   <div class="flex items-center gap-2">
+    <Button
+      variant="outline"
+      size="icon-sm"
+      onclick={onConfigure}
+      aria-label="Configure diagram"
+    >
+      <Settings2Icon class="size-3.5" />
+    </Button>
     <Button
       variant="outline"
       size="sm"

@@ -62,7 +62,7 @@
   });
 </script>
 
-<Card.Root class="h-full min-h-[30rem] gap-0 py-0 shadow-sm">
+<Card.Root class="h-full min-h-[30rem] min-w-0 gap-0 py-0 shadow-sm xl:min-h-0">
   <Card.Header
     class="border-b px-4 py-4 sm:px-5"
   >

@@ -1,4 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
+import type {
+  DiagramConfigOverrides,
+  ProjectDiagramConfig,
+} from "@/features/diagrams/diagram-config";
 
 export type EntryKind = "file" | "folder";
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -54,6 +58,23 @@ export const projectsApi = {
     invoke<string>("read_diagram", { project, path }),
   writeDiagram: (project: string, path: string, content: string) =>
     invoke<void>("write_diagram", { project, path, content }),
+  getDiagramConfig: (project: string) =>
+    invoke<ProjectDiagramConfig>("get_project_diagram_config", { project }),
+  saveDiagramDefaults: (project: string, defaults: DiagramConfigOverrides) =>
+    invoke<ProjectDiagramConfig>("save_project_diagram_defaults", {
+      project,
+      defaults,
+    }),
+  saveDiagramOverrides: (
+    project: string,
+    path: string,
+    overrides: DiagramConfigOverrides,
+  ) =>
+    invoke<ProjectDiagramConfig>("save_diagram_overrides", {
+      project,
+      path,
+      overrides,
+    }),
   createEntry: (
     project: string,
     parentPath: string,
@@ -83,6 +104,6 @@ export const exportApi = {
     invoke<PngMetadata>("inspect_diagram_png", { svg, options }),
   savePng: (svg: string, path: string, options: PngOptions) =>
     invoke<PngMetadata>("save_diagram_png", { svg, path, options }),
-  copyPng: (svg: string) =>
-    invoke<PngMetadata>("copy_diagram_png", { svg }),
+  copyPng: (svg: string, options: PngOptions) =>
+    invoke<PngMetadata>("copy_diagram_png", { svg, options }),
 };

@@ -1,20 +1,23 @@
 use super::{
     error::ProjectError,
     model::{
-        compare_names, compare_nodes, CreateEntryRequest, EntryKind, Project, RenameEntryRequest,
-        TreeNode,
+        compare_names, compare_nodes, CreateEntryRequest, EntryKind, Project, ProjectDiagramConfig,
+        RenameEntryRequest, TreeNode,
     },
     path_security::{
         ensure_parent_contained, is_diagram_path, reject_symlink_components, relative_path,
         validate_diagram_path, validate_name, validate_relative_path,
     },
 };
+use crate::features::settings::model::DiagramConfigOverrides;
 use crate::utils::filesystem::{
     canonicalize, create_directory, create_directory_all, create_file, delete_directory_all,
     delete_file, entry_type, path_exists, read_directory, read_text_file, rename, write_text_file,
     EntryType,
 };
 use std::path::{Path, PathBuf};
+
+const PROJECT_CONFIG_FILE: &str = ".arch-diagrams.json";
 
 const STARTER_DIAGRAM: &str = r#"flowchart LR
   A[Client] --> B[API Gateway]
@@ -104,6 +107,44 @@ impl ProjectService {
         write_text_file(&file, content).map_err(|error| ProjectError::io("write diagram", error))
     }
 
+    pub fn get_diagram_config(&self, project: &str) -> Result<ProjectDiagramConfig, ProjectError> {
+        let project_root = self.project_root(project)?;
+        self.read_diagram_config(&project_root)
+    }
+
+    pub fn save_project_diagram_defaults(
+        &self,
+        project: &str,
+        defaults: DiagramConfigOverrides,
+    ) -> Result<ProjectDiagramConfig, ProjectError> {
+        defaults.validate().map_err(ProjectError::invalid_config)?;
+        let project_root = self.project_root(project)?;
+        let mut config = self.read_diagram_config(&project_root)?;
+        config.defaults = defaults;
+        self.write_diagram_config(&project_root, &config)?;
+        Ok(config)
+    }
+
+    pub fn save_diagram_overrides(
+        &self,
+        project: &str,
+        path: &str,
+        overrides: DiagramConfigOverrides,
+    ) -> Result<ProjectDiagramConfig, ProjectError> {
+        overrides.validate().map_err(ProjectError::invalid_config)?;
+        let project_root = self.project_root(project)?;
+        let file = self.existing_entry(&project_root, path, EntryKind::File)?;
+        validate_diagram_path(&file)?;
+        let mut config = self.read_diagram_config(&project_root)?;
+        if overrides.is_empty() {
+            config.diagrams.remove(path);
+        } else {
+            config.diagrams.insert(path.to_owned(), overrides);
+        }
+        self.write_diagram_config(&project_root, &config)?;
+        Ok(config)
+    }
+
     pub fn create_entry(
         &self,
         project: &str,
@@ -149,6 +190,7 @@ impl ProjectService {
         validate_name(&request.new_name, request.kind)?;
         let project_root = self.project_root(project)?;
         let source = self.existing_entry(&project_root, &request.path, request.kind)?;
+        let mut config = self.read_diagram_config(&project_root)?;
         let parent = source
             .parent()
             .ok_or_else(|| ProjectError::invalid_path("Cannot rename the project root."))?;
@@ -173,7 +215,16 @@ impl ProjectService {
                 ProjectError::io("rename entry", error)
             }
         })?;
-        relative_path(&project_root, &destination)
+        let destination_relative = relative_path(&project_root, &destination)?;
+        if Self::remap_diagram_configs(
+            &mut config,
+            &request.path,
+            &destination_relative,
+            request.kind,
+        ) {
+            self.write_diagram_config(&project_root, &config)?;
+        }
+        Ok(destination_relative)
     }
 
     pub fn delete_entry(
@@ -184,6 +235,7 @@ impl ProjectService {
     ) -> Result<(), ProjectError> {
         let project_root = self.project_root(project)?;
         let entry = self.existing_entry(&project_root, path, kind)?;
+        let mut config = self.read_diagram_config(&project_root)?;
         match kind {
             EntryKind::File => {
                 validate_diagram_path(&entry)?;
@@ -191,7 +243,11 @@ impl ProjectService {
             }
             EntryKind::Folder => delete_directory_all(&entry)
                 .map_err(|error| ProjectError::io("delete folder", error)),
+        }?;
+        if Self::remove_diagram_configs(&mut config, path, kind) {
+            self.write_diagram_config(&project_root, &config)?;
         }
+        Ok(())
     }
 
     fn project_root(&self, project: &str) -> Result<PathBuf, ProjectError> {
@@ -282,5 +338,94 @@ impl ProjectService {
         }
         nodes.sort_by(compare_nodes);
         Ok(nodes)
+    }
+
+    fn read_diagram_config(
+        &self,
+        project_root: &Path,
+    ) -> Result<ProjectDiagramConfig, ProjectError> {
+        let path = project_root.join(PROJECT_CONFIG_FILE);
+        if !path_exists(&path).map_err(|error| ProjectError::io("inspect project config", error))? {
+            return Ok(ProjectDiagramConfig::default());
+        }
+        let content = read_text_file(&path)
+            .map_err(|error| ProjectError::io("read project config", error))?;
+        let config: ProjectDiagramConfig = serde_json::from_str(&content).map_err(|error| {
+            ProjectError::invalid_config(format!("Could not parse {PROJECT_CONFIG_FILE}: {error}"))
+        })?;
+        if config.version != 1 {
+            return Err(ProjectError::invalid_config(format!(
+                "Unsupported project config version {}.",
+                config.version
+            )));
+        }
+        config
+            .defaults
+            .validate()
+            .map_err(ProjectError::invalid_config)?;
+        for (path, overrides) in &config.diagrams {
+            let path_buf = validate_relative_path(path)?;
+            validate_diagram_path(&path_buf)?;
+            overrides.validate().map_err(ProjectError::invalid_config)?;
+        }
+        Ok(config)
+    }
+
+    fn write_diagram_config(
+        &self,
+        project_root: &Path,
+        config: &ProjectDiagramConfig,
+    ) -> Result<(), ProjectError> {
+        let content = serde_json::to_string_pretty(config)
+            .map_err(|error| ProjectError::io("serialize project config", error))?;
+        write_text_file(
+            &project_root.join(PROJECT_CONFIG_FILE),
+            &format!("{content}\n"),
+        )
+        .map_err(|error| ProjectError::io("write project config", error))
+    }
+
+    fn remap_diagram_configs(
+        config: &mut ProjectDiagramConfig,
+        old_path: &str,
+        new_path: &str,
+        kind: EntryKind,
+    ) -> bool {
+        let old_prefix = format!("{old_path}/");
+        let updates = config
+            .diagrams
+            .keys()
+            .filter_map(|path| {
+                if path == old_path {
+                    Some((path.clone(), new_path.to_owned()))
+                } else if kind == EntryKind::Folder && path.starts_with(&old_prefix) {
+                    Some((
+                        path.clone(),
+                        format!("{new_path}/{}", &path[old_prefix.len()..]),
+                    ))
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        for (old, new) in &updates {
+            if let Some(value) = config.diagrams.remove(old) {
+                config.diagrams.insert(new.clone(), value);
+            }
+        }
+        !updates.is_empty()
+    }
+
+    fn remove_diagram_configs(
+        config: &mut ProjectDiagramConfig,
+        path: &str,
+        kind: EntryKind,
+    ) -> bool {
+        let prefix = format!("{path}/");
+        let before = config.diagrams.len();
+        config.diagrams.retain(|candidate, _| {
+            candidate != path && !(kind == EntryKind::Folder && candidate.starts_with(&prefix))
+        });
+        before != config.diagrams.len()
     }
 }

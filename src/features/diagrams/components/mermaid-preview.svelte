@@ -11,6 +11,10 @@
   import { Spinner } from "$lib/components/ui/spinner";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import SvgViewport from "$lib/components/svg-viewport.svelte";
+  import {
+    toMermaidConfig,
+    type ResolvedDiagramConfig,
+  } from "../diagram-config";
 
   let {
     source,
@@ -19,6 +23,8 @@
     isRendering = $bindable(true),
     renderError = $bindable(""),
     renderedSvg = $bindable(""),
+    config,
+    compact = false,
   }: {
     source: string;
     editorHidden: boolean;
@@ -26,6 +32,8 @@
     isRendering?: boolean;
     renderError?: string;
     renderedSvg?: string;
+    config: ResolvedDiagramConfig;
+    compact?: boolean;
   } = $props();
 
   let diagramSvg = $state("");
@@ -39,26 +47,6 @@
   }
 
   onMount(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      suppressErrorRendering: true,
-      securityLevel: "strict",
-      theme: "base",
-      htmlLabels: false,
-      themeVariables: {
-        primaryColor: "#ecfdf8",
-        primaryTextColor: "#172423",
-        primaryBorderColor: "#4b9f91",
-        lineColor: "#657c78",
-        secondaryColor: "#f4f8f7",
-        tertiaryColor: "#ffffff",
-        fontFamily: "JetBrains Mono Variable, monospace",
-      },
-      flowchart: {
-        curve: "basis",
-      },
-    });
-
     isReady = true;
   });
 
@@ -66,6 +54,7 @@
     if (!isReady) return;
 
     const currentSource = source;
+    const currentConfig = config;
     const currentSequence = ++renderSequence;
     isRendering = true;
 
@@ -73,6 +62,7 @@
       const renderId = `mermaid-preview-${currentSequence}`;
 
       try {
+        mermaid.initialize(toMermaidConfig(currentConfig));
         await mermaid.parse(currentSource);
         const { svg } = await mermaid.render(renderId, currentSource);
 
@@ -99,7 +89,7 @@
   });
 </script>
 
-<Card.Root class="h-full min-h-[30rem] gap-0 py-0 shadow-sm">
+<Card.Root class={compact ? "min-h-64 min-w-0 gap-0 py-0 shadow-sm" : "h-full min-h-[30rem] min-w-0 gap-0 py-0 shadow-sm xl:min-h-0"}>
   <Card.Header class="border-b px-4 py-4 sm:px-5">
     <div>
       <Card.Description class="mb-1 text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
@@ -110,6 +100,7 @@
 
     <Card.Action class="flex items-center gap-2">
       <Badge variant="secondary">Auto-render</Badge>
+      {#if !compact}
       <Tooltip.Provider>
         <Tooltip.Root>
           <Tooltip.Trigger>
@@ -135,11 +126,13 @@
           </Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
+      {/if}
     </Card.Action>
   </Card.Header>
 
   <Card.Content
     class="relative grid min-h-0 flex-1 place-items-center overflow-hidden bg-muted/20 p-0"
+    style={config.common.background === "white" ? "background-color: white" : undefined}
   >
     <div
       class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:18px_18px]"
@@ -167,9 +160,9 @@
     {/if}
   </Card.Content>
 
-  <Card.Footer
+  {#if !compact}<Card.Footer
     class="text-muted-foreground min-h-9 justify-end border-t px-4 text-[0.65rem]"
   >
     Updates as you type
-  </Card.Footer>
+  </Card.Footer>{/if}
 </Card.Root>

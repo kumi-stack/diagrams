@@ -11,20 +11,20 @@
     exportApi,
     type PngBackground,
     type PngMetadata,
-    type PngScale,
   } from "@/api/projects";
 
   let {
     open = $bindable(false),
     svg,
     diagramPath,
+    defaultBackground,
   }: {
     open?: boolean;
     svg: string;
     diagramPath: string;
+    defaultBackground: PngBackground;
   } = $props();
 
-  let scale = $state("2");
   let background = $state<PngBackground>("transparent");
   let metadata = $state<PngMetadata | null>(null);
   let inspecting = $state(false);
@@ -34,13 +34,17 @@
   let baseName = $derived(
     (diagramPath.split("/").pop() ?? "diagram").replace(/\.[^.]+$/, ""),
   );
-  let pngScale = $derived(Number(scale) as PngScale);
+  $effect(() => {
+    if (open) {
+      background = defaultBackground;
+    }
+  });
 
   $effect(() => {
     if (!open || !svg) return;
 
     const currentSequence = ++inspectionSequence;
-    const options = { scale: pngScale, background };
+    const options = { scale: 2 as const, background };
     inspecting = true;
 
     void exportApi
@@ -71,7 +75,7 @@
     saving = true;
     try {
       const result = await exportApi.savePng(svg, pngPath, {
-        scale: pngScale,
+        scale: 2,
         background,
       });
       open = false;
@@ -94,23 +98,6 @@
     </Dialog.Header>
 
     <div class="grid gap-5">
-      <fieldset class="grid gap-3">
-        <legend class="text-sm font-medium">Scale</legend>
-        <RadioGroup.Root
-          bind:value={scale}
-          class="grid grid-cols-3 gap-2"
-        >
-          {#each ["1", "2", "3"] as value (value)}
-            <Label
-              class="has-data-checked:border-primary has-data-checked:bg-primary/5 flex cursor-pointer items-center gap-2 rounded-xl border p-3"
-            >
-              <RadioGroup.Item value={value} />
-              {value}x
-            </Label>
-          {/each}
-        </RadioGroup.Root>
-      </fieldset>
-
       <fieldset class="grid gap-3">
         <legend class="text-sm font-medium">Background</legend>
         <RadioGroup.Root bind:value={background} class="grid grid-cols-2 gap-2">

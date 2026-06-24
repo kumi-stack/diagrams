@@ -26,4 +26,8 @@ impl ProjectError {
     pub fn invalid_path(message: impl Into<String>) -> Self {
         Self::new("invalidPath", message)
     }
+
+    pub fn invalid_config(message: impl Into<String>) -> Self {
+        Self::new("invalidConfig", message)
+    }
 }

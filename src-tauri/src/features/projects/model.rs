@@ -1,5 +1,26 @@
+use crate::features::settings::model::DiagramConfigOverrides;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
+use std::{cmp::Ordering, collections::BTreeMap};
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectDiagramConfig {
+    pub version: u32,
+    #[serde(default)]
+    pub defaults: DiagramConfigOverrides,
+    #[serde(default)]
+    pub diagrams: BTreeMap<String, DiagramConfigOverrides>,
+}
+
+impl Default for ProjectDiagramConfig {
+    fn default() -> Self {
+        Self {
+            version: 1,
+            defaults: Default::default(),
+            diagrams: Default::default(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]

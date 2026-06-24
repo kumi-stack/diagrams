@@ -1,15 +1,18 @@
 <script lang="ts">
   import FolderSyncIcon from "@lucide/svelte/icons/folder-sync";
   import NetworkIcon from "@lucide/svelte/icons/network";
+  import Settings2Icon from "@lucide/svelte/icons/settings-2";
   import { Button } from "$lib/components/ui/button";
   import * as Sidebar from "$lib/components/ui/sidebar";
 
   let {
     projectName = "",
     onswitchproject,
+    onsettings,
   }: {
     projectName?: string;
     onswitchproject: () => void;
+    onsettings: () => void;
   } = $props();
 </script>
 
@@ -30,8 +33,14 @@
     </div>
   </div>
 
-  <Button variant="outline" size="sm" onclick={onswitchproject}>
-    <FolderSyncIcon data-icon="inline-start" />
-    <span class="hidden sm:inline">Switch project</span>
-  </Button>
+  <div class="flex items-center gap-2">
+    <Button variant="outline" size="sm" onclick={onsettings}>
+      <Settings2Icon data-icon="inline-start" />
+      <span class="hidden sm:inline">Configure</span>
+    </Button>
+    <Button variant="outline" size="sm" onclick={onswitchproject}>
+      <FolderSyncIcon data-icon="inline-start" />
+      <span class="hidden sm:inline">Switch project</span>
+    </Button>
+  </div>
 </header>

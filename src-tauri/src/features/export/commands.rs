@@ -1,6 +1,6 @@
 use super::{
     error::ExportError,
-    model::{PngBackground, PngMetadata, PngOptions},
+    model::{PngMetadata, PngOptions},
     renderer,
 };
 use std::path::PathBuf;
@@ -38,18 +38,14 @@ pub async fn save_diagram_png(
 }
 
 #[tauri::command]
-pub async fn copy_diagram_png(app: AppHandle, svg: String) -> Result<PngMetadata, ExportError> {
-    let rendered = tauri::async_runtime::spawn_blocking(move || {
-        renderer::render(
-            &svg,
-            PngOptions {
-                scale: 2,
-                background: PngBackground::Transparent,
-            },
-        )
-    })
-    .await
-    .map_err(|error| ExportError::new("render_task_failed", error.to_string()))??;
+pub async fn copy_diagram_png(
+    app: AppHandle,
+    svg: String,
+    options: PngOptions,
+) -> Result<PngMetadata, ExportError> {
+    let rendered = tauri::async_runtime::spawn_blocking(move || renderer::render(&svg, options))
+        .await
+        .map_err(|error| ExportError::new("render_task_failed", error.to_string()))??;
 
     let image = tauri::image::Image::new_owned(
         rendered.rgba,

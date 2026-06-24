@@ -1,8 +1,11 @@
 use super::{
     error::ProjectError,
-    model::{CreateEntryRequest, EntryKind, Project, RenameEntryRequest, TreeNode},
+    model::{
+        CreateEntryRequest, EntryKind, Project, ProjectDiagramConfig, RenameEntryRequest, TreeNode,
+    },
     service::ProjectService,
 };
+use crate::features::settings::model::DiagramConfigOverrides;
 use tauri::{AppHandle, Manager};
 
 fn service(app: &AppHandle) -> Result<ProjectService, ProjectError> {
@@ -41,6 +44,33 @@ pub fn write_diagram(
     content: String,
 ) -> Result<(), ProjectError> {
     service(&app)?.write_diagram(&project, &path, &content)
+}
+
+#[tauri::command]
+pub fn get_project_diagram_config(
+    app: AppHandle,
+    project: String,
+) -> Result<ProjectDiagramConfig, ProjectError> {
+    service(&app)?.get_diagram_config(&project)
+}
+
+#[tauri::command]
+pub fn save_project_diagram_defaults(
+    app: AppHandle,
+    project: String,
+    defaults: DiagramConfigOverrides,
+) -> Result<ProjectDiagramConfig, ProjectError> {
+    service(&app)?.save_project_diagram_defaults(&project, defaults)
+}
+
+#[tauri::command]
+pub fn save_diagram_overrides(
+    app: AppHandle,
+    project: String,
+    path: String,
+    overrides: DiagramConfigOverrides,
+) -> Result<ProjectDiagramConfig, ProjectError> {
+    service(&app)?.save_diagram_overrides(&project, &path, overrides)
 }
 
 #[tauri::command]
