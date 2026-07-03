@@ -10,7 +10,7 @@ pub(crate) fn service(app: &AppHandle) -> Result<SettingsService, SettingsError>
         .path()
         .home_dir()
         .map_err(|error| SettingsError::io("resolve home directory", error))?;
-    SettingsService::new(home.join(".arch-diagrams"))
+    SettingsService::new(home.join(".kumi-diagrams"))
 }
 
 #[tauri::command]

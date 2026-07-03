@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    arch_diagrams_lib::run()
+    kumi_diagrams_lib::run()
 }

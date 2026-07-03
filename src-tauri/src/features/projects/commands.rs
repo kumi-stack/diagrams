@@ -13,7 +13,7 @@ fn service(app: &AppHandle) -> Result<ProjectService, ProjectError> {
         .path()
         .home_dir()
         .map_err(|error| ProjectError::io("resolve home directory", error))?;
-    ProjectService::new(home.join(".arch-diagrams"))
+    ProjectService::new(home.join(".kumi-diagrams"))
 }
 
 #[tauri::command]

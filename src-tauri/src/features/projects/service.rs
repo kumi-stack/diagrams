@@ -17,7 +17,7 @@ use crate::utils::filesystem::{
 };
 use std::path::{Path, PathBuf};
 
-const PROJECT_CONFIG_FILE: &str = ".arch-diagrams.json";
+const PROJECT_CONFIG_FILE: &str = ".kumi-diagrams.json";
 
 const STARTER_DIAGRAM: &str = r#"flowchart LR
   A[Client] --> B[API Gateway]

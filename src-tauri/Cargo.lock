@@ -69,21 +69,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "arch-diagrams"
-version = "0.1.0"
-dependencies = [
- "ollama-rs",
- "resvg",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-clipboard-manager",
- "tauri-plugin-dialog",
- "tempfile",
-]
-
-[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1887,6 +1872,21 @@ dependencies = [
  "bitflags 2.13.0",
  "serde",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "kumi-diagrams"
+version = "0.1.0"
+dependencies = [
+ "ollama-rs",
+ "resvg",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-clipboard-manager",
+ "tauri-plugin-dialog",
+ "tempfile",
 ]
 
 [[package]]

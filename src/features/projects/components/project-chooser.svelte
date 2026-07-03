@@ -51,7 +51,7 @@
         <div>
           <Card.Title>Choose a project</Card.Title>
           <Card.Description class="mt-1">
-            Diagram projects are stored in ~/.arch-diagrams
+            Diagram projects are stored in ~/.kumi-diagrams
           </Card.Description>
         </div>
       </div>

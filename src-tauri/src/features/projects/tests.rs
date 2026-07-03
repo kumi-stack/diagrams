@@ -216,7 +216,7 @@ fn saves_project_and_diagram_configuration() {
     assert_eq!(config.diagrams.get("diagram.mmd"), Some(&defaults));
     assert!(temp
         .path()
-        .join("projects/project/.arch-diagrams.json")
+        .join("projects/project/.kumi-diagrams.json")
         .exists());
     assert_eq!(service.list_project_tree("project").unwrap().len(), 1);
 }
@@ -288,7 +288,7 @@ fn remaps_and_removes_diagram_configuration_with_entries() {
 fn refuses_to_overwrite_invalid_project_configuration() {
     let (temp, service) = service();
     service.create_project("project").unwrap();
-    let path = temp.path().join("projects/project/.arch-diagrams.json");
+    let path = temp.path().join("projects/project/.kumi-diagrams.json");
     fs::write(&path, "{ invalid").unwrap();
 
     assert_eq!(

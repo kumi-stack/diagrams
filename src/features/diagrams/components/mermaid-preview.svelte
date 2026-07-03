@@ -16,6 +16,8 @@
     type ResolvedDiagramConfig,
   } from "../diagram-config";
 
+  const renderDebounceMs = 450;
+
   let {
     source,
     editorHidden,
@@ -56,10 +58,10 @@
     const currentSource = source;
     const currentConfig = config;
     const currentSequence = ++renderSequence;
-    isRendering = true;
 
     const timeout = window.setTimeout(async () => {
       const renderId = `mermaid-preview-${currentSequence}`;
+      isRendering = true;
 
       try {
         mermaid.initialize(toMermaidConfig(currentConfig));
@@ -83,7 +85,7 @@
           isRendering = false;
         }
       }
-    }, 220);
+    }, renderDebounceMs);
 
     return () => window.clearTimeout(timeout);
   });
