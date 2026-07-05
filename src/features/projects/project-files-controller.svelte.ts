@@ -28,6 +28,9 @@ export class ProjectFilesController {
   creatingProject = $state(false);
   projectDialogError = $state("");
   aiEnabled = $state(false);
+  moveToTrashDialogOpen = $state(false);
+  moveToTrashTarget = $state<TreeNode | null>(null);
+  movingToTrash = $state(false);
 
   readonly dialog = new EntryDialogState();
   private flushActiveDiagram: () => Promise<boolean> = async () => true;
@@ -225,25 +228,30 @@ export class ProjectFilesController {
     }
   };
 
-  deleteEntry = async (node: TreeNode) => {
-    const detail =
-      node.kind === "folder"
-        ? `Delete "${node.name}" and everything inside it?`
-        : `Delete "${node.name}"?`;
-    if (!window.confirm(detail)) return;
+  openMoveToTrashDialog = (node: TreeNode) => {
+    this.moveToTrashTarget = node;
+    this.moveToTrashDialogOpen = true;
+  };
 
+  confirmMoveEntryToTrash = async () => {
+    const node = this.moveToTrashTarget;
+    if (!node) return;
+
+    this.movingToTrash = true;
     this.error = "";
     try {
-      const deletedActiveDiagram =
+      const movedActiveDiagram =
         this.activePath === node.path ||
         (node.kind === "folder" &&
           this.activePath?.startsWith(`${node.path}/`));
-      if (deletedActiveDiagram && !(await this.flushActiveDiagram())) return;
+      if (movedActiveDiagram && !(await this.flushActiveDiagram())) return;
 
-      await projectsApi.deleteEntry(this.projectName, node.path, node.kind);
+      await projectsApi.moveEntryToTrash(this.projectName, node.path, node.kind);
+      this.moveToTrashDialogOpen = false;
+      this.moveToTrashTarget = null;
       await this.refreshTree();
 
-      if (deletedActiveDiagram) {
+      if (movedActiveDiagram) {
         await goto(
           resolve("/projects/[project]", { project: this.projectName }),
           { replaceState: true },
@@ -251,6 +259,8 @@ export class ProjectFilesController {
       }
     } catch (cause) {
       this.error = errorMessage(cause);
+    } finally {
+      this.movingToTrash = false;
     }
   };
 

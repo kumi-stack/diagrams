@@ -62,12 +62,12 @@ pub fn rename(source: &Path, destination: &Path) -> io::Result<()> {
     fs::rename(source, destination)
 }
 
-pub fn delete_file(path: &Path) -> io::Result<()> {
-    fs::remove_file(path)
+pub fn remove_directory_all(path: &Path) -> io::Result<()> {
+    fs::remove_dir_all(path)
 }
 
-pub fn delete_directory_all(path: &Path) -> io::Result<()> {
-    fs::remove_dir_all(path)
+pub fn move_to_trash(path: &Path) -> io::Result<()> {
+    trash::delete(path).map_err(io::Error::other)
 }
 
 pub fn entry_type(path: &Path) -> io::Result<EntryType> {
@@ -138,8 +138,8 @@ mod tests {
         assert_eq!(read_text_file(&destination).unwrap(), "sequenceDiagram");
         assert!(canonicalize(&destination).unwrap().is_absolute());
 
-        delete_file(&destination).unwrap();
-        delete_directory_all(&temp.path().join("one")).unwrap();
+        fs::remove_file(&destination).unwrap();
+        remove_directory_all(&temp.path().join("one")).unwrap();
         assert!(!path_exists(&nested).unwrap());
     }
 

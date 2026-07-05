@@ -23,7 +23,7 @@
     onselect,
     oncreate,
     onrename,
-    ondelete,
+    onmovetotrash,
     onrefresh,
     onrefreshprojects,
     onopenproject,
@@ -38,7 +38,7 @@
     onselect: (node: TreeNode) => void;
     oncreate: (parentPath: string, kind: EntryKind) => void;
     onrename: (node: TreeNode) => void;
-    ondelete: (node: TreeNode) => void;
+    onmovetotrash: (node: TreeNode) => void;
     onrefresh: () => void;
     onrefreshprojects: () => void;
     onopenproject: (name: string) => void;
@@ -140,7 +140,7 @@
             {onselect}
             {oncreate}
             {onrename}
-            {ondelete}
+            {onmovetotrash}
           />
         {/each}
       </div>

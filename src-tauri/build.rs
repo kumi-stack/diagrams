@@ -11,7 +11,7 @@ fn main() {
             "save_diagram_overrides",
             "create_entry",
             "rename_entry",
-            "delete_entry",
+            "move_entry_to_trash",
             "get_settings",
             "save_settings",
             "save_global_diagram_defaults",

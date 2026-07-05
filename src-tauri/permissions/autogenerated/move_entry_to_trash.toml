@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-move-entry-to-trash"
+description = "Enables the move_entry_to_trash command without any pre-configured scope."
+commands.allow = ["move_entry_to_trash"]
+
+[[permission]]
+identifier = "deny-move-entry-to-trash"
+description = "Denies the move_entry_to_trash command without any pre-configured scope."
+commands.deny = ["move_entry_to_trash"]

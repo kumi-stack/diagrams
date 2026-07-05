@@ -11,11 +11,14 @@ use super::{
 };
 use crate::features::settings::model::DiagramConfigOverrides;
 use crate::utils::filesystem::{
-    canonicalize, create_directory, create_directory_all, create_file, delete_directory_all,
-    delete_file, entry_type, path_exists, read_directory, read_text_file, rename, write_text_file,
+    canonicalize, create_directory, create_directory_all, create_file, entry_type, move_to_trash,
+    path_exists, read_directory, read_text_file, remove_directory_all, rename, write_text_file,
     EntryType,
 };
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 const PROJECT_CONFIG_FILE: &str = ".kumi-diagrams.json";
 
@@ -30,10 +33,26 @@ const STARTER_DIAGRAM: &str = r#"flowchart LR
 
 pub struct ProjectService {
     root: PathBuf,
+    move_entry_to_trash: Arc<dyn Fn(&Path) -> std::io::Result<()> + Send + Sync>,
 }
 
 impl ProjectService {
     pub fn new(root: PathBuf) -> Result<Self, ProjectError> {
+        Self::with_trash(root, Arc::new(move_to_trash))
+    }
+
+    #[cfg(test)]
+    pub fn new_with_trash<F>(root: PathBuf, move_entry_to_trash: F) -> Result<Self, ProjectError>
+    where
+        F: Fn(&Path) -> std::io::Result<()> + Send + Sync + 'static,
+    {
+        Self::with_trash(root, Arc::new(move_entry_to_trash))
+    }
+
+    fn with_trash(
+        root: PathBuf,
+        move_entry_to_trash: Arc<dyn Fn(&Path) -> std::io::Result<()> + Send + Sync>,
+    ) -> Result<Self, ProjectError> {
         create_directory_all(&root)
             .map_err(|error| ProjectError::io("create project root", error))?;
         let root_type =
@@ -43,7 +62,10 @@ impl ProjectService {
                 "The project root must be a real directory.",
             ));
         }
-        Ok(Self { root })
+        Ok(Self {
+            root,
+            move_entry_to_trash,
+        })
     }
 
     pub fn list_projects(&self) -> Result<Vec<Project>, ProjectError> {
@@ -74,7 +96,7 @@ impl ProjectService {
         }
 
         if let Err(error) = write_text_file(&path.join("diagram.mmd"), STARTER_DIAGRAM) {
-            let _ = delete_directory_all(&path);
+            let _ = remove_directory_all(&path);
             return Err(ProjectError::io("create starter diagram", error));
         }
 
@@ -227,7 +249,7 @@ impl ProjectService {
         Ok(destination_relative)
     }
 
-    pub fn delete_entry(
+    pub fn move_entry_to_trash(
         &self,
         project: &str,
         path: &str,
@@ -239,10 +261,11 @@ impl ProjectService {
         match kind {
             EntryKind::File => {
                 validate_diagram_path(&entry)?;
-                delete_file(&entry).map_err(|error| ProjectError::io("delete file", error))
+                (self.move_entry_to_trash)(&entry)
+                    .map_err(|error| ProjectError::io("move file to trash", error))
             }
-            EntryKind::Folder => delete_directory_all(&entry)
-                .map_err(|error| ProjectError::io("delete folder", error)),
+            EntryKind::Folder => (self.move_entry_to_trash)(&entry)
+                .map_err(|error| ProjectError::io("move folder to trash", error)),
         }?;
         if Self::remove_diagram_configs(&mut config, path, kind) {
             self.write_diagram_config(&project_root, &config)?;

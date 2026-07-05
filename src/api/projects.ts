@@ -95,8 +95,8 @@ export const projectsApi = {
       project,
       request: { path, newName, kind },
     }),
-  deleteEntry: (project: string, path: string, kind: EntryKind) =>
-    invoke<void>("delete_entry", { project, path, kind }),
+  moveEntryToTrash: (project: string, path: string, kind: EntryKind) =>
+    invoke<void>("move_entry_to_trash", { project, path, kind }),
 };
 
 export const exportApi = {

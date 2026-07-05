@@ -36,7 +36,7 @@ pub fn run() {
             commands::save_diagram_overrides,
             commands::create_entry,
             commands::rename_entry,
-            commands::delete_entry,
+            commands::move_entry_to_trash,
             settings::commands::get_settings,
             settings::commands::save_settings,
             settings::commands::save_global_diagram_defaults,

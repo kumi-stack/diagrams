@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import * as Sidebar from "$lib/components/ui/sidebar";
   import EntryDialog from "./components/entry-dialog.svelte";
+  import MoveEntryToTrashDialog from "./components/move-entry-to-trash-dialog.svelte";
   import ProjectDialog from "./components/project-dialog.svelte";
   import ProjectSidebar from "./components/project-sidebar.svelte";
   import { ProjectFilesController } from "./project-files-controller.svelte";
@@ -47,7 +48,7 @@
     onselect={project.openDiagram}
     oncreate={project.openCreateDialog}
     onrename={project.openRenameDialog}
-    ondelete={project.deleteEntry}
+    onmovetotrash={project.openMoveToTrashDialog}
     onrefresh={project.refreshTree}
     onrefreshprojects={project.refreshProjects}
     onopenproject={project.openProject}
@@ -70,6 +71,13 @@
   status={project.dialog.status}
   aiEnabled={project.aiEnabled}
   onsubmit={project.submitEntry}
+/>
+
+<MoveEntryToTrashDialog
+  bind:open={project.moveToTrashDialogOpen}
+  target={project.moveToTrashTarget}
+  busy={project.movingToTrash}
+  onconfirm={project.confirmMoveEntryToTrash}
 />
 
 <ProjectDialog

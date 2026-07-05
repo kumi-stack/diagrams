@@ -15,7 +15,7 @@
     onselect,
     oncreate,
     onrename,
-    ondelete,
+    onmovetotrash,
   }: {
     node: TreeNode;
     activePath: string | null;
@@ -23,7 +23,7 @@
     onselect: (node: TreeNode) => void;
     oncreate: (parentPath: string, kind: EntryKind) => void;
     onrename: (node: TreeNode) => void;
-    ondelete: (node: TreeNode) => void;
+    onmovetotrash: (node: TreeNode) => void;
   } = $props();
 
   let open = $state(true);
@@ -79,8 +79,8 @@
           <DropdownMenu.Separator />
         {/if}
         <DropdownMenu.Item onclick={() => onrename(node)}>Rename</DropdownMenu.Item>
-        <DropdownMenu.Item class="text-destructive" onclick={() => ondelete(node)}>
-          Delete
+        <DropdownMenu.Item class="text-destructive" onclick={() => onmovetotrash(node)}>
+          Move to trash
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu.Root>
@@ -96,7 +96,7 @@
           {onselect}
           {oncreate}
           {onrename}
-          {ondelete}
+          {onmovetotrash}
         />
       {/each}
     </div>

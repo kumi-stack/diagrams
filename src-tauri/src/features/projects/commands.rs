@@ -92,11 +92,11 @@ pub fn rename_entry(
 }
 
 #[tauri::command]
-pub fn delete_entry(
+pub fn move_entry_to_trash(
     app: AppHandle,
     project: String,
     path: String,
     kind: EntryKind,
 ) -> Result<(), ProjectError> {
-    service(&app)?.delete_entry(&project, &path, kind)
+    service(&app)?.move_entry_to_trash(&project, &path, kind)
 }

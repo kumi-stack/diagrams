@@ -10,7 +10,15 @@ use tempfile::TempDir;
 
 fn service() -> (TempDir, ProjectService) {
     let temp = TempDir::new().unwrap();
-    let service = ProjectService::new(temp.path().join("projects")).unwrap();
+    let trash = temp.path().join("trash");
+    fs::create_dir(&trash).unwrap();
+    let service = ProjectService::new_with_trash(temp.path().join("projects"), move |path| {
+        let destination = trash.join(path.file_name().ok_or_else(|| {
+            std::io::Error::new(std::io::ErrorKind::InvalidInput, "entry has no file name")
+        })?);
+        fs::rename(path, destination)
+    })
+    .unwrap();
     (temp, service)
 }
 
@@ -53,7 +61,7 @@ fn rejects_duplicate_and_invalid_project_names() {
 
 #[test]
 fn supports_nested_crud_and_directory_first_sorting() {
-    let (_temp, service) = service();
+    let (temp, service) = service();
     service.create_project("project").unwrap();
     service
         .create_entry(
@@ -131,8 +139,9 @@ fn supports_nested_crud_and_directory_first_sorting() {
         "alreadyExists"
     );
     service
-        .delete_entry("project", "z-folder", EntryKind::Folder)
+        .move_entry_to_trash("project", "z-folder", EntryKind::Folder)
         .unwrap();
+    assert!(temp.path().join("trash/z-folder").is_dir());
     assert_eq!(service.list_project_tree("project").unwrap().len(), 2);
 }
 
@@ -222,8 +231,8 @@ fn saves_project_and_diagram_configuration() {
 }
 
 #[test]
-fn remaps_and_removes_diagram_configuration_with_entries() {
-    let (_temp, service) = service();
+fn remaps_and_clears_diagram_configuration_with_entries_moved_to_trash() {
+    let (temp, service) = service();
     service.create_project("project").unwrap();
     service
         .create_entry(
@@ -275,8 +284,9 @@ fn remaps_and_removes_diagram_configuration_with_entries() {
         .contains_key("renamed/nested.mmd"));
 
     service
-        .delete_entry("project", "renamed", EntryKind::Folder)
+        .move_entry_to_trash("project", "renamed", EntryKind::Folder)
         .unwrap();
+    assert!(temp.path().join("trash/renamed").is_dir());
     assert!(service
         .get_diagram_config("project")
         .unwrap()

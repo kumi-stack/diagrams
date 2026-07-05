@@ -12,7 +12,7 @@ permissions = [
   "allow-save-diagram-overrides",
   "allow-create-entry",
   "allow-rename-entry",
-  "allow-delete-entry",
+  "allow-move-entry-to-trash",
   "allow-get-settings",
   "allow-save-settings",
   "allow-save-global-diagram-defaults",
