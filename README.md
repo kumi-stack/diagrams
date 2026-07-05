@@ -26,20 +26,14 @@ To run the project from source, you need:
 ## Install From DMG
 
 1. Download `KumiDiagrams.dmg` from the project release.
-2. If macOS blocks the downloaded app or the file comes from outside the App Store, clear quarantine attributes:
+2. Open the `.dmg` file.
+3. Move `KumiDiagrams.app` to the `Applications` folder.
+4. If macOS blocks the app clear quarantine attributes:
 
    ```bash
-   xattr -c ~/Downloads/KumiDiagrams.dmg
+   xattr -c /Applications/KumiDiagrams.app/
    ```
 
-   For a specific downloaded file name, use that name instead of `KumiDiagrams.dmg`, for example:
-
-   ```bash
-   xattr -c ~/Downloads/file-name
-   ```
-
-3. Open the `.dmg` file.
-4. Move `KumiDiagrams.app` to the `Applications` folder.
 5. Launch the app from Launchpad or from the `Applications` folder.
 
 ## Manual Installation
