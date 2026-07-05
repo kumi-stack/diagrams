@@ -2,6 +2,10 @@
 
 KumiDiagrams is a desktop application for creating and organizing Mermaid diagrams. It combines SvelteKit, Tauri, and a local Rust backend, so diagram editing feels like a native app while your diagrams remain plain text files inside project folders.
 
+<img width="1264" height="804" alt="CleanShot 2026-07-05 at 13 23 22" src="https://github.com/user-attachments/assets/a7d7bdc6-81bf-47cd-8811-c719761e6c52" />
+<img width="1264" height="806" alt="CleanShot 2026-07-05 at 13 23 09" src="https://github.com/user-attachments/assets/5a7f43cd-5e32-4033-8ac0-93b5346e4800" />
+
+
 ## Features
 
 - **Projects as folders** - each project is a separate directory with `.mmd` diagrams and optional `.kumi-diagrams.json` configuration.
