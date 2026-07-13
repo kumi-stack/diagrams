@@ -15,6 +15,7 @@
     toMermaidConfig,
     type ResolvedDiagramConfig,
   } from "../diagram-config";
+  import { registerMermaidIconPacks } from "../mermaid-icon-packs";
 
   const renderDebounceMs = 450;
 
@@ -64,6 +65,7 @@
       isRendering = true;
 
       try {
+        await registerMermaidIconPacks(mermaid, currentSource);
         mermaid.initialize(toMermaidConfig(currentConfig));
         await mermaid.parse(currentSource);
         const { svg } = await mermaid.render(renderId, currentSource);

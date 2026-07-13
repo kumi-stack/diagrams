@@ -16,6 +16,17 @@ KumiDiagrams is a desktop application for creating and organizing Mermaid diagra
 - **PNG export** - save a diagram as a PNG file or copy the rendered image to the clipboard.
 - **Optional local AI** - Ollama integration can generate initial Mermaid source from a description without sending data to external services.
 
+## Icons
+
+For icons, we use [GLINCKER/thesvg](https://github.com/GLINCKER/thesvg). Reference an icon with the `icons:` prefix (the `logos:` alias also works):
+
+```mermaid
+architecture-beta
+  service bedrock(icons:aws-amazon-bedrock)[Amazon Bedrock]
+```
+
+Only icons referenced by a diagram are loaded from the theSVG jsDelivr CDN.
+
 ## Requirements
 
 To run the project from source, you need:

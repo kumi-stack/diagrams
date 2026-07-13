@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import TestWrapper from "./diagram-config-form.test-wrapper.svelte";
 
 const mermaidMocks = vi.hoisted(() => ({
+  registerIconPacks: vi.fn(),
   initialize: vi.fn(),
   parse: vi.fn(async () => true),
   render: vi.fn(async () => ({ svg: "" })),
