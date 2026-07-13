@@ -20,11 +20,6 @@ KumiDiagrams is a desktop application for creating and organizing Mermaid diagra
 
 For icons, we use [GLINCKER/thesvg](https://github.com/GLINCKER/thesvg). Reference an icon with the `icons:` prefix (the `logos:` alias also works):
 
-```mermaid
-architecture-beta
-  service bedrock(icons:aws-amazon-bedrock)[Amazon Bedrock]
-```
-
 Only icons referenced by a diagram are loaded from the theSVG jsDelivr CDN.
 
 ## Requirements
